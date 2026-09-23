@@ -1,18 +1,18 @@
-# emantery.dev
+# emantery 的项目与测试实践
 
-emantery 的个人技术博客与求职作品集，关注 AI 应用开发、LLM 评测和软件测试。
+2027 届校招作品集，聚焦软件测试、测试开发和 AI 产品测试。首页展示真实项目、验证思路与明确标注的学习路线。
 
 ## 当前内容
 
-- AI 应用与质量工程方向介绍
-- 项目规划与后续实践记录
-- 技术文章写作计划
-- 真实版本更新记录
+- 云脑诊疗平台、Linux 棋牌游戏、图书管理系统三个项目
+- 挂号/缴费、AI 导诊、业务状态等验证思路
+- 测试开发学习路线：接口自动化、UI 自动化、持续集成
+- 当前可阅读的学习笔记与更新记录
 
 ## 访问地址
 
-GitHub Pages 配置完成后访问：<https://emantvery.github.io>
+<https://emantvery.github.io>
 
 ## 技术实现
 
-零依赖静态 HTML、CSS 与 JavaScript，使用 GitHub Actions 自动部署到 GitHub Pages。
+零依赖静态 HTML、CSS 与 JavaScript；推送到 `main` 后由 GitHub Actions 部署到 GitHub Pages。

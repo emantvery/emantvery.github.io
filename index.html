@@ -3,9 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="emantery 的 AI 应用开发与软件测试作品集，记录项目、测试实践和技术复盘。" />
+  <meta name="description" content="emantery 的软件测试与测试开发作品集：真实项目、接口验证思路和测试开发学习路线。" />
+  <meta property="og:title" content="emantery｜软件测试与测试开发项目实践" />
+  <meta property="og:description" content="三个真实项目、测试验证思路与学习路线。" />
+  <meta property="og:type" content="website" />
+  <link rel="canonical" href="https://emantvery.github.io/" />
   <meta name="theme-color" content="#0b0f14" />
-  <title>emantery｜AI 应用开发与软件测试</title>
+  <title>emantery｜软件测试与测试开发项目实践</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b0f14'/%3E%3Cpath d='M18 17h28v8H27v4h16v7H27v4h19v8H18z' fill='%2390f7c5'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="./styles.css" />
   <script src="./script.js" defer></script>
@@ -14,7 +18,8 @@
   <a class="skip-link" href="#main">跳到主要内容</a>
   <header class="site-header">
     <a class="brand" href="#top" aria-label="返回首页"><span class="brand-mark">EM</span><span>emantery<span class="accent">.dev</span></span></a>
-    <nav class="nav" aria-label="主导航"><a href="#projects">项目</a><a href="#writing">文章</a><a href="#about">关于</a><a href="#changelog">更新</a></nav>
+    <nav class="nav" id="site-nav" aria-label="主导航"><a href="#projects">项目</a><a href="#practice">测试实践</a><a href="#learning">学习路线</a><a href="#notes">学习笔记</a><a href="#about">关于</a></nav>
+    <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false">菜单</button>
     <button class="theme-toggle" type="button" aria-label="切换明暗主题">◐</button>
   </header>
 
@@ -22,59 +27,88 @@
     <section class="hero" id="top">
       <div class="hero-copy">
         <p class="eyebrow"><span class="status-dot"></span> 2027 年 7 月毕业 · 寻找校招机会</p>
-        <h1>把 AI 应用做出来，<br /><span>也把质量守住。</span></h1>
-        <p class="hero-intro">我是软件工程本科生，关注 AI 应用工程、LLM 评测与自动化测试。这里记录我如何把一个想法变成可运行、可测试、可迭代的软件。</p>
-        <div class="hero-actions"><a class="button primary" href="#projects">查看项目 ↗</a><a class="button secondary" href="https://github.com/emantvery">GitHub</a></div>
-        <ul class="quick-facts"><li><span>方向</span>AI 应用开发 / 软件测试</li><li><span>技术</span>Java · Python · TypeScript</li><li><span>毕业</span>2027 年 7 月</li></ul>
+        <h1>从业务流程到接口验证，<br /><span>把项目讲清楚。</span></h1>
+        <p class="hero-intro">我是 2027 届本科生，参与过 Spring Boot 后端开发与接口联调。这里展示三个项目、我关注的验证场景，以及正在补齐的测试开发知识。</p>
+        <div class="hero-actions"><a class="button primary" href="#projects">查看项目 ↗</a><a class="button secondary" href="mailto:3054851044@qq.com">联系我</a><a class="button secondary" href="https://github.com/emantvery" target="_blank" rel="noopener noreferrer">GitHub</a></div>
+        <ul class="quick-facts"><li><span>求职方向</span>软件测试 / 测试开发 / AI 产品测试</li><li><span>项目技术</span>Java · Spring Boot · MySQL · Linux</li><li><span>学习方向</span>接口自动化 · UI 自动化 · CI</li></ul>
       </div>
       <aside class="hero-panel" aria-label="当前关注方向">
-        <div class="panel-toolbar"><span></span><span></span><span></span><code>profile.json</code></div>
-        <pre><code><span class="syntax-muted">{</span>
-  <span class="syntax-key">"focus"</span>: [
-    <span class="syntax-string">"RAG & AI Agents"</span>,
-    <span class="syntax-string">"LLM Evaluation"</span>,
-    <span class="syntax-string">"Test Automation"</span>
-  ],
-  <span class="syntax-key">"principle"</span>:
-    <span class="syntax-string">"Build. Test. Explain."</span>,
-  <span class="syntax-key">"status"</span>: <span class="syntax-string">"shipping"</span>
-<span class="syntax-muted">}</span></code></pre>
-        <div class="panel-note"><span>当前任务</span><strong>构建这个作品集的 v0.1.0</strong></div>
+        <div class="panel-toolbar"><span></span><span></span><span></span><code>verification-notes.md</code></div>
+        <ol class="focus-list">
+          <li><span>01</span><div><strong>理解业务规则</strong><p>明确角色、前置条件和状态变化。</p></div></li>
+          <li><span>02</span><div><strong>拆分验证场景</strong><p>正常、边界、异常与重复操作。</p></div></li>
+          <li><span>03</span><div><strong>核对不同证据</strong><p>页面提示、接口返回、日志与业务数据。</p></div></li>
+          <li><span>04</span><div><strong>记录与复核</strong><p>写清触发条件，确认修改后的结果。</p></div></li>
+        </ol>
+        <div class="panel-note"><span>本站内容</span><strong>项目实践与学习计划分开展示</strong></div>
       </aside>
     </section>
 
-    <section class="signal-strip"><span>需求拆解</span><i></i><span>接口开发</span><i></i><span>测试设计</span><i></i><span>持续交付</span><i></i><span>技术复盘</span></section>
+    <section class="signal-strip" aria-label="关注的质量链路"><span>业务规则</span><i></i><span>接口参数</span><i></i><span>边界异常</span><i></i><span>日志与数据</span><i></i><span>修改复核</span></section>
 
     <section class="section" id="projects">
-      <div class="section-heading"><div><p class="eyebrow">01 / SELECTED WORK</p><h2>精选项目</h2></div><p>项目内容将在真实材料完成后逐步补充，目前展示的是下一阶段的开发方向。</p></div>
+      <div class="section-heading"><div><p class="eyebrow">01 / PROJECTS</p><h2>项目实践</h2></div><p>以现有项目为主，说明参与的开发、联调和验证环节；不把学习计划写成项目成果。</p></div>
       <div class="project-grid">
-        <article class="project-card featured"><div class="project-topline"><span class="project-index">P01</span><span class="badge planned">规划中</span></div><div><p class="project-type">AI APPLICATION</p><h3>可溯源知识库问答系统</h3><p>面向课程资料或个人文档的 RAG 问答应用，重点展示检索链路、来源引用、评测集和异常处理。</p></div><ul class="tag-list"><li>Java / Python</li><li>RAG</li><li>Vector DB</li><li>Docker</li></ul></article>
-        <article class="project-card"><div class="project-topline"><span class="project-index">P02</span><span class="badge planned">规划中</span></div><div><p class="project-type">AI QUALITY</p><h3>LLM 应用评测台</h3><p>管理测试集、比较 Prompt 版本，并追踪相关性、幻觉与响应时延等质量指标。</p></div><ul class="tag-list"><li>Evaluation</li><li>Prompt</li><li>CI</li></ul></article>
-        <article class="project-card"><div class="project-topline"><span class="project-index">P03</span><span class="badge planned">规划中</span></div><div><p class="project-type">TEST ENGINEERING</p><h3>接口与 UI 自动化测试框架</h3><p>围绕真实 Web 应用建立接口、端到端和回归测试，并在提交时自动生成测试结果。</p></div><ul class="tag-list"><li>Playwright</li><li>Pytest</li><li>GitHub Actions</li></ul></article>
+        <article class="project-card featured">
+          <div class="project-topline"><span class="project-index">P01 · 2026.06—2026.07</span><span class="badge actual">项目实践</span></div>
+          <div><p class="project-type">SPRING BOOT / AI APPLICATION</p><h3>云脑诊疗平台</h3><p>包含挂号、缴费、诊疗记录、AI 导诊和病历辅助功能，面向患者、医生和管理端。参与后端功能开发与前后端接口联调，围绕核心业务梳理验证场景。</p>
+            <ul class="project-points"><li>挂号与缴费：关注号源、重复请求、异常参数和状态更新。</li><li>AI 导诊：关注症状信息不完整、模型调用失败及异常返回时的页面提示。</li><li>问题排查：结合接口返回、运行日志和业务数据记录触发条件。</li></ul>
+          </div>
+          <div><ul class="tag-list"><li>Spring Boot</li><li>MySQL</li><li>Vue</li><li>AI 模型接口</li></ul><div class="project-links"><a href="https://gitee.com/emantery/hospital" target="_blank" rel="noopener noreferrer">后端代码 ↗</a><a href="https://gitee.com/emantery/hospital-frontend" target="_blank" rel="noopener noreferrer">前端代码 ↗</a></div></div>
+        </article>
+        <article class="project-card">
+          <div class="project-topline"><span class="project-index">P02 · 2026.01—2026.07</span><span class="badge actual">项目实践</span></div>
+          <div><p class="project-type">JAVA / LINUX</p><h3>多人在线回合制棋牌游戏</h3><p>参与房间、匹配、回合操作、结算和战绩流程梳理；关注退出房间、非当前回合操作、重复提交后，对局结果与记录是否一致。</p></div>
+          <ul class="tag-list"><li>Java</li><li>MySQL</li><li>Linux</li></ul>
+        </article>
+        <article class="project-card">
+          <div class="project-topline"><span class="project-index">P03 · 2024.04—2024.05</span><span class="badge actual">项目实践</span></div>
+          <div><p class="project-type">JAVA / BUSINESS RULES</p><h3>图书管理系统</h3><p>使用 Java 完成图书信息、借阅和归还功能；围绕借阅资格、库存、重复借阅、逾期归还及权限限制整理验证场景。</p></div>
+          <ul class="tag-list"><li>Java</li><li>数据库设计</li><li>功能验证</li></ul>
+        </article>
       </div>
     </section>
 
-    <section class="section split-section" id="writing">
-      <div class="section-heading vertical"><p class="eyebrow">02 / NOTES</p><h2>技术文章</h2><p>不堆砌概念，只记录我实际完成的实验、踩过的坑和可以复现的结论。</p></div>
-      <div class="post-list">
-        <article class="post-row"><div><span class="badge draft">写作计划</span><h3>RAG 项目不是接上向量库就结束了</h3></div><p>评测 · 预计 8 分钟</p></article>
-        <article class="post-row"><div><span class="badge draft">写作计划</span><h3>我如何给大模型输出设计测试用例</h3></div><p>测试 · 预计 10 分钟</p></article>
-        <article class="post-row"><div><span class="badge draft">写作计划</span><h3>从一次失败的接口测试谈数据隔离</h3></div><p>工程 · 预计 6 分钟</p></article>
+    <section class="section" id="practice">
+      <div class="section-heading"><div><p class="eyebrow">02 / TESTING PRACTICE</p><h2>怎么想测试</h2></div><p>这些是围绕项目业务整理和关注的验证点，不等同于已经完成自动化覆盖或性能评测。</p></div>
+      <div class="practice-grid">
+        <article class="practice-card"><span class="practice-number">01</span><h3>挂号与缴费接口</h3><p>先确定用户、号源和订单的前置状态，再覆盖正常提交、必填项缺失、边界输入、重复请求和状态更新。检查页面提示、接口返回与数据库记录是否一致。</p></article>
+        <article class="practice-card"><span class="practice-number">02</span><h3>AI 导诊异常处理</h3><p>把“输入不足”“模型调用失败”“返回结构异常”拆成不同场景，分别考虑用户能否得到清楚提示，以及异常内容是否被直接展示。</p></article>
+        <article class="practice-card"><span class="practice-number">03</span><h3>业务状态与缺陷复核</h3><p>房间退出、非当前回合操作、重复借阅等场景都涉及状态变化。记录操作前提、请求与结果，再结合日志和业务数据定位异常并复核修改。</p></article>
+      </div>
+    </section>
+
+    <section class="section split-section" id="learning">
+      <div class="section-heading vertical"><p class="eyebrow">03 / LEARNING PATH</p><h2>测试开发<br />学习路线</h2><p>把“已接触”和“计划学习”分开写。下面的工具路线是后续学习目标，不冒充已完成的项目经验。</p></div>
+      <div class="learning-list">
+        <article class="learning-item"><span class="badge actual">已接触</span><div><h3>开发与排查基础</h3><p>Java、Spring Boot、MySQL、HTTP/JSON、SQL、Git 和 Linux 常用命令；在项目中接触后端开发、接口联调、日志与业务数据核对。</p></div></article>
+        <article class="learning-item"><span class="badge learning">学习重点</span><div><h3>测试设计与接口自动化</h3><p>按等价类、边界值、状态流转梳理用例；学习 Python、requests、pytest 的断言、参数化与测试数据隔离，并把用例接到真实项目接口。</p></div></article>
+        <article class="learning-item"><span class="badge learning">学习重点</span><div><h3>页面回归与持续集成</h3><p>学习 Playwright 的页面定位和稳定等待，了解 GitHub Actions 如何在代码提交后运行检查；优先从小而可复现的场景开始。</p></div></article>
+        <article class="learning-item"><span class="badge learning">学习重点</span><div><h3>AI 应用质量</h3><p>继续学习输出质量评估、失败兜底与主客观评价；在 AI 导诊场景里区分接口是否正常、页面是否可用和推荐内容是否合理。</p></div></article>
+      </div>
+    </section>
+
+    <section class="section" id="notes">
+      <div class="section-heading"><div><p class="eyebrow">04 / STUDY NOTES</p><h2>学习笔记</h2></div><p>把当前能够说明白的检查思路写在这里；这些是方法整理，不是虚构的测试报告。</p></div>
+      <div class="notes-grid">
+        <article class="note-card"><span class="badge actual">场景拆分</span><h3>挂号接口先测什么？</h3><p>先画清“查号源 → 提交预约 → 更新状态”的链路，再按条件拆分：号源不足、重复提交、无权限、字段缺失和错误日期。每个场景都写明输入、预期状态与核对位置。</p></article>
+        <article class="note-card"><span class="badge actual">问题定位</span><h3>接口返回不对，先看什么？</h3><p>保留请求参数与响应内容，确认是否稳定复现；再看服务日志、对应业务记录和前端提示。把“看到的现象”与“推测的原因”分开记录，复核时使用同一组输入。</p></article>
+        <article class="note-card"><span class="badge actual">AI 应用</span><h3>AI 导诊不只看接口成功</h3><p>模型返回 200 不代表体验正确。还要关注症状缺失时是否提示补充、调用失败时是否有兜底、输出异常时页面是否避免展示误导性内容。</p></article>
       </div>
     </section>
 
     <section class="section about-section" id="about">
-      <div><p class="eyebrow">03 / ABOUT</p><h2>我希望成为连接<br />开发与质量的人。</h2></div>
-      <div class="about-copy"><p>我目前是软件工程专业大四学生。相比只展示“做过什么”，我更希望在这里说明：为什么这样设计、怎样验证结果，以及下一次会如何做得更好。</p><a class="text-link" href="mailto:3054851044@qq.com">联系我 →</a></div>
+      <div><p class="eyebrow">05 / ABOUT</p><h2>先把做过的事<br />讲明白。</h2></div>
+      <div class="about-copy"><p>我是 2027 届本科生，求职方向是软件测试、测试开发与 AI 产品测试。参与过后端功能开发和接口联调，目前继续补齐测试设计、自动化与 AI 应用质量方面的知识。</p><p>如果你想了解某个项目的业务规则、异常场景或我的具体参与范围，欢迎直接联系我。</p><a class="text-link" href="mailto:3054851044@qq.com">3054851044@qq.com →</a></div>
     </section>
 
     <section class="section" id="changelog">
-      <div class="section-heading"><div><p class="eyebrow">04 / CHANGELOG</p><h2>真实更新记录</h2></div><p>从今天开始记录公开版本；历史项目只做明确标注的回顾整理。</p></div>
-      <div class="timeline"><article><time datetime="2026-09-23">2026.09.23</time><div><span class="badge release">v0.1.0</span><h3>作品集骨架建立</h3><p>完成首页信息架构、响应式视觉、明暗主题和 GitHub Pages 部署配置。</p></div></article></div>
+      <div class="section-heading"><div><p class="eyebrow">06 / CHANGELOG</p><h2>更新记录</h2></div><p>只记录实际发布的内容，不回填项目开发日期。</p></div>
+      <div class="timeline"><article><time datetime="2026-09-23">2026.09.23</time><div><span class="badge release">内容更新</span><h3>换成真实项目与学习路线</h3><p>移除规划项目和文章占位，补充云脑诊疗平台、Linux 棋牌游戏、图书管理系统、测试验证思路与测试开发学习清单。</p></div></article></div>
     </section>
 
-    <section class="contact-section"><p class="eyebrow">LET'S BUILD SOMETHING RELIABLE</p><h2>对我的项目感兴趣？<br />欢迎和我聊聊。</h2><div class="contact-links"><a class="button primary" href="mailto:3054851044@qq.com">发送邮件</a><a class="button secondary" href="https://github.com/emantvery">查看 GitHub</a></div></section>
+    <section class="contact-section"><p class="eyebrow">CONTACT</p><h2>想进一步聊项目？<br />欢迎联系我。</h2><div class="contact-links"><a class="button primary" href="mailto:3054851044@qq.com">发送邮件</a><a class="button secondary" href="https://github.com/emantvery" target="_blank" rel="noopener noreferrer">查看 GitHub</a></div></section>
   </main>
-  <footer><p>© 2026 emantery</p><p>Designed, built and tested with care.</p></footer>
+  <footer><p>© 2026 emantery</p><p>项目实践与学习计划分开展示 · <a href="https://github.com/emantvery/emantvery.github.io" target="_blank" rel="noopener noreferrer">本站源码</a></p></footer>
 </body>
 </html>
