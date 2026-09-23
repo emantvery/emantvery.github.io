@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="emantery 的 AI 应用开发与软件测试作品集，记录项目、测试实践和技术复盘。" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>emantery｜AI 应用开发与软件测试</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b0f14'/%3E%3Cpath d='M18 17h28v8H27v4h16v7H27v4h19v8H18z' fill='%2390f7c5'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="./script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="返回首页"><span class="brand-mark">EM</span><span>emantery<span class="accent">.dev</span></span></a>
+    <nav class="nav" aria-label="主导航"><a href="#projects">项目</a><a href="#writing">文章</a><a href="#about">关于</a><a href="#changelog">更新</a></nav>
+    <button class="theme-toggle" type="button" aria-label="切换明暗主题">◐</button>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="status-dot"></span> 2027 年 7 月毕业 · 寻找校招机会</p>
+        <h1>把 AI 应用做出来，<br /><span>也把质量守住。</span></h1>
+        <p class="hero-intro">我是软件工程本科生，关注 AI 应用工程、LLM 评测与自动化测试。这里记录我如何把一个想法变成可运行、可测试、可迭代的软件。</p>
+        <div class="hero-actions"><a class="button primary" href="#projects">查看项目 ↗</a><a class="button secondary" href="https://github.com/emantvery">GitHub</a></div>
+        <ul class="quick-facts"><li><span>方向</span>AI 应用开发 / 软件测试</li><li><span>技术</span>Java · Python · TypeScript</li><li><span>毕业</span>2027 年 7 月</li></ul>
+      </div>
+      <aside class="hero-panel" aria-label="当前关注方向">
+        <div class="panel-toolbar"><span></span><span></span><span></span><code>profile.json</code></div>
+        <pre><code><span class="syntax-muted">{</span>
+  <span class="syntax-key">"focus"</span>: [
+    <span class="syntax-string">"RAG & AI Agents"</span>,
+    <span class="syntax-string">"LLM Evaluation"</span>,
+    <span class="syntax-string">"Test Automation"</span>
+  ],
+  <span class="syntax-key">"principle"</span>:
+    <span class="syntax-string">"Build. Test. Explain."</span>,
+  <span class="syntax-key">"status"</span>: <span class="syntax-string">"shipping"</span>
+<span class="syntax-muted">}</span></code></pre>
+        <div class="panel-note"><span>当前任务</span><strong>构建这个作品集的 v0.1.0</strong></div>
+      </aside>
+    </section>
+
+    <section class="signal-strip"><span>需求拆解</span><i></i><span>接口开发</span><i></i><span>测试设计</span><i></i><span>持续交付</span><i></i><span>技术复盘</span></section>
+
+    <section class="section" id="projects">
+      <div class="section-heading"><div><p class="eyebrow">01 / SELECTED WORK</p><h2>精选项目</h2></div><p>项目内容将在真实材料完成后逐步补充，目前展示的是下一阶段的开发方向。</p></div>
+      <div class="project-grid">
+        <article class="project-card featured"><div class="project-topline"><span class="project-index">P01</span><span class="badge planned">规划中</span></div><div><p class="project-type">AI APPLICATION</p><h3>可溯源知识库问答系统</h3><p>面向课程资料或个人文档的 RAG 问答应用，重点展示检索链路、来源引用、评测集和异常处理。</p></div><ul class="tag-list"><li>Java / Python</li><li>RAG</li><li>Vector DB</li><li>Docker</li></ul></article>
+        <article class="project-card"><div class="project-topline"><span class="project-index">P02</span><span class="badge planned">规划中</span></div><div><p class="project-type">AI QUALITY</p><h3>LLM 应用评测台</h3><p>管理测试集、比较 Prompt 版本，并追踪相关性、幻觉与响应时延等质量指标。</p></div><ul class="tag-list"><li>Evaluation</li><li>Prompt</li><li>CI</li></ul></article>
+        <article class="project-card"><div class="project-topline"><span class="project-index">P03</span><span class="badge planned">规划中</span></div><div><p class="project-type">TEST ENGINEERING</p><h3>接口与 UI 自动化测试框架</h3><p>围绕真实 Web 应用建立接口、端到端和回归测试，并在提交时自动生成测试结果。</p></div><ul class="tag-list"><li>Playwright</li><li>Pytest</li><li>GitHub Actions</li></ul></article>
+      </div>
+    </section>
+
+    <section class="section split-section" id="writing">
+      <div class="section-heading vertical"><p class="eyebrow">02 / NOTES</p><h2>技术文章</h2><p>不堆砌概念，只记录我实际完成的实验、踩过的坑和可以复现的结论。</p></div>
+      <div class="post-list">
+        <article class="post-row"><div><span class="badge draft">写作计划</span><h3>RAG 项目不是接上向量库就结束了</h3></div><p>评测 · 预计 8 分钟</p></article>
+        <article class="post-row"><div><span class="badge draft">写作计划</span><h3>我如何给大模型输出设计测试用例</h3></div><p>测试 · 预计 10 分钟</p></article>
+        <article class="post-row"><div><span class="badge draft">写作计划</span><h3>从一次失败的接口测试谈数据隔离</h3></div><p>工程 · 预计 6 分钟</p></article>
+      </div>
+    </section>
+
+    <section class="section about-section" id="about">
+      <div><p class="eyebrow">03 / ABOUT</p><h2>我希望成为连接<br />开发与质量的人。</h2></div>
+      <div class="about-copy"><p>我目前是软件工程专业大四学生。相比只展示“做过什么”，我更希望在这里说明：为什么这样设计、怎样验证结果，以及下一次会如何做得更好。</p><a class="text-link" href="mailto:3054851044@qq.com">联系我 →</a></div>
+    </section>
+
+    <section class="section" id="changelog">
+      <div class="section-heading"><div><p class="eyebrow">04 / CHANGELOG</p><h2>真实更新记录</h2></div><p>从今天开始记录公开版本；历史项目只做明确标注的回顾整理。</p></div>
+      <div class="timeline"><article><time datetime="2026-09-23">2026.09.23</time><div><span class="badge release">v0.1.0</span><h3>作品集骨架建立</h3><p>完成首页信息架构、响应式视觉、明暗主题和 GitHub Pages 部署配置。</p></div></article></div>
+    </section>
+
+    <section class="contact-section"><p class="eyebrow">LET'S BUILD SOMETHING RELIABLE</p><h2>对我的项目感兴趣？<br />欢迎和我聊聊。</h2><div class="contact-links"><a class="button primary" href="mailto:3054851044@qq.com">发送邮件</a><a class="button secondary" href="https://github.com/emantvery">查看 GitHub</a></div></section>
+  </main>
+  <footer><p>© 2026 emantery</p><p>Designed, built and tested with care.</p></footer>
+</body>
+</html>
