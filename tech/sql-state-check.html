@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="测试开发中的数据库状态核对：从接口结果到业务不变量，用 SQL 检查号源与预约记录是否一致，附可运行 SQLite 示例。" />
+  <link rel="canonical" href="https://emantvery.github.io/tech/sql-state-check.html" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <title>接口成功后，数据库该怎么核对｜emantery</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="site-header">
+    <a class="brand" href="../" aria-label="返回首页"><span class="brand-mark">EM</span><span>emantery<span class="accent">.dev</span></span></a>
+    <nav class="nav" id="site-nav" aria-label="主导航"><a href="../#projects">项目</a><a href="../#practice">测试实践</a><a href="../#learning">学习路线</a><a href="./" aria-current="page">技术总结</a><a href="../#about">关于</a></nav>
+    <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false">菜单</button>
+    <button class="theme-toggle" type="button" aria-label="切换明暗主题">◐</button>
+  </header>
+  <main id="main" class="tech-main">
+    <header class="article-hero">
+      <p class="eyebrow">NOTE 05 / DATA VERIFICATION</p>
+      <h1>接口成功后，数据库该怎么核对</h1>
+      <p class="lead">返回一个预约编号，只能证明接口声称成功。要判断业务状态是否一致，需要把预约记录和号源余量放到同一条规则里检查。</p>
+      <div class="article-meta"><span>主题：SQL · 数据状态 · 业务不变量</span><span>更新：2026.09.23</span></div>
+    </header>
+    <div class="article-grid">
+      <article class="article-body">
+        <div class="article-callout"><strong>示例边界</strong><p>本文的表结构和等式是独立教学示例，不是云脑诊疗平台的真实数据库设计。配套 <a href="https://github.com/emantvery/emantvery.github.io/tree/main/examples/sql-state-check" target="_blank" rel="noopener noreferrer">SQLite 示例代码</a>只在内存中运行，已本地验证 2 个检查通过。真实系统应先确认状态口径与数据权限。</p></div>
+
+        <h2 id="rule">01. 先写出业务不变量</h2>
+        <p>假设一个简化的号源只有三种相关数据：总量 <code>capacity</code>、剩余量 <code>remaining</code>、状态为 <code>reserved</code> 的预约数。则可以暂定：</p>
+        <pre><code>capacity = remaining + reserved_count</code></pre>
+        <p>这条等式不是医疗系统的通用真理。如果业务中“待支付”也占库存、取消后不立即释放、存在超时锁定或跨系统同步，那么公式必须重写。测试人员应该先和需求、开发确认“哪些记录算占用”，再查库；否则 SQL 写得再漂亮，结论也可能错。</p>
+
+        <h2 id="query">02. 用聚合查询找出不一致行</h2>
+        <pre><code>SELECT
+    slots.id,
+    slots.capacity,
+    slots.remaining,
+    COUNT(appointments.id) AS reserved_count
+FROM slots
+LEFT JOIN appointments
+    ON appointments.slot_id = slots.id
+    AND appointments.status = 'reserved'
+GROUP BY slots.id, slots.capacity, slots.remaining
+HAVING slots.remaining + COUNT(appointments.id) != slots.capacity
+    OR slots.remaining &lt; 0;</code></pre>
+        <p>这里用 <code>LEFT JOIN</code>，是为了让“尚无预约的号源”也被检查；把 <code>status = 'reserved'</code> 放在 <code>ON</code> 中，则取消记录不会被算作占用。<code>COUNT(appointments.id)</code> 只计算非空的预约 ID，所以没有匹配预约时得到 0。最后 <code>HAVING</code> 留下违反规则的号源。</p>
+        <p>示例数据里，一个总量为 2 的号源有 1 条有效预约、1 条取消预约，剩余 1 时无异常行；把剩余误写为 2，就会返回异常行 <code>(slot-01, 2, 2, 1)</code>。单纯看“预约表里有记录”发现不了这一类问题。</p>
+
+        <h2 id="case">03. 把 SQL 放进可复现的用例</h2>
+        <p>一条完整的接口用例可以按以下顺序执行：准备独立号源与用户 → 记录初始余量和预约数 → 发送请求 → 保存响应中的预约编号 → 查询该编号及相关号源 → 执行一致性查询 → 对照预期断言。失败请求还要确认<strong>没有留下半更新</strong>：例如预约没创建却减了号源，或接口报错但数据库已有有效预约。</p>
+        <p>多用例共用一张表时，不要依赖“刚好没有其他人使用这个号源”。使用独立测试数据、随机业务标识或受控清理，才能避免彼此污染。并发场景要在请求完成后按业务允许的最终状态核对，不要把两个不同时间点的查询硬拼成一次快照。</p>
+
+        <h2 id="limits">04. 知道查库能证明什么、不能证明什么</h2>
+        <ul>
+          <li><strong>能证明：</strong>在所查询的环境、时间点和规则口径下，所选数据是否满足约束。</li>
+          <li><strong>不能单独证明：</strong>用户页面展示正确、跨服务异步处理完成、并发控制始终正确，或系统不存在其他异常。</li>
+          <li><strong>要留意：</strong>读写分离和异步同步会带来时间差；在合适的事务或等待条件下核对，并记录查询时间与环境。</li>
+        </ul>
+        <p>真实项目中尤其要使用授权的测试库与脱敏数据。不要为了“验证”直接修改生产表，也不要把患者姓名、身份信息或数据库凭据写入公开脚本与问题截图。</p>
+
+        <h2 id="run">05. 运行独立示例</h2>
+        <pre><code>cd examples/sql-state-check
+python check.py</code></pre>
+        <p>示例只使用 Python 标准库的 <code>sqlite3</code> 和 <code>unittest</code>，分别验证“一致状态没有异常行”和“错误余量被查出”。如果将来迁移到 MySQL，应核对实际表结构、隔离级别、状态定义与 SQL 方言，不应直接复用这个演示查询。</p>
+
+        <h2 id="sources">参考资料</h2>
+        <ul>
+          <li><a href="https://www.sqlite.org/lang_select.html" target="_blank" rel="noopener noreferrer">SQLite 官方文档：SELECT、JOIN、GROUP BY、HAVING</a>。</li>
+          <li><a href="https://www.sqlite.org/lang_aggfunc.html" target="_blank" rel="noopener noreferrer">SQLite 官方文档：COUNT 聚合函数</a>；<a href="https://www.sqlite.org/lang_transaction.html" target="_blank" rel="noopener noreferrer">事务</a>。</li>
+        </ul>
+        <nav class="article-nav" aria-label="文章导航"><a href="./playwright-ui-tests.html">← 上一篇：页面冒烟检查</a><a href="./">全部文章</a></nav>
+      </article>
+      <aside class="article-aside"><p>ON THIS PAGE</p><nav aria-label="文章目录"><a href="#rule">业务不变量</a><a href="#query">聚合查询</a><a href="#case">可复现用例</a><a href="#limits">核对边界</a><a href="#run">运行示例</a><a href="#sources">参考资料</a></nav></aside>
+    </div>
+  </main>
+  <footer><p>© 2026 emantery</p><p><a href="./">技术总结</a> · <a href="../">返回首页</a></p></footer>
+</body>
+</html>

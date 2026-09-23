@@ -1,13 +1,15 @@
-name: Test appointment API example
+name: Test Python teaching examples
 
 on:
   push:
     paths:
       - "examples/appointment-api/**"
+      - "examples/sql-state-check/**"
       - ".github/workflows/tech-example-ci.yml"
   pull_request:
     paths:
       - "examples/appointment-api/**"
+      - "examples/sql-state-check/**"
       - ".github/workflows/tech-example-ci.yml"
   workflow_dispatch:
 
@@ -27,3 +29,5 @@ jobs:
       - name: Run isolated API tests
         working-directory: examples/appointment-api
         run: python -m pytest -q
+      - name: Check SQL state exercise
+        run: python examples/sql-state-check/check.py

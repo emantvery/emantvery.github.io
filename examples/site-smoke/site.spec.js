@@ -42,6 +42,7 @@ test("technical pages have working local links and no viewport overflow", async 
     "/tech/pytest-api-tests.html",
     "/tech/ai-application-testing.html",
     "/tech/playwright-ui-tests.html",
+    "/tech/sql-state-check.html",
   ];
   for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 900 });
