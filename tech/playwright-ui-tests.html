@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Playwright 页面自动化学习总结：稳定定位、自动等待、移动端菜单、主题切换和可运行的博客冒烟测试。" />
+  <link rel="canonical" href="https://emantvery.github.io/tech/playwright-ui-tests.html" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <title>从稳定定位到页面冒烟检查｜emantery</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="site-header">
+    <a class="brand" href="../" aria-label="返回首页"><span class="brand-mark">EM</span><span>emantery<span class="accent">.dev</span></span></a>
+    <nav class="nav" id="site-nav" aria-label="主导航"><a href="../#projects">项目</a><a href="../#practice">测试实践</a><a href="../#learning">学习路线</a><a href="./" aria-current="page">技术总结</a><a href="../#about">关于</a></nav>
+    <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false">菜单</button>
+    <button class="theme-toggle" type="button" aria-label="切换明暗主题">◐</button>
+  </header>
+  <main id="main" class="tech-main">
+    <header class="article-hero">
+      <p class="eyebrow">NOTE 04 / UI AUTOMATION</p>
+      <h1>从稳定定位到页面冒烟检查</h1>
+      <p class="lead">页面自动化不应靠“等三秒再点第一个按钮”。先挑选稳定的用户可见行为，再让定位和断言表达预期。</p>
+      <div class="article-meta"><span>主题：Playwright · 响应式页面 · 冒烟测试</span><span>更新：2026.09.23</span></div>
+    </header>
+    <div class="article-grid">
+      <article class="article-body">
+        <div class="article-callout"><strong>示例边界</strong><p>配套代码位于 <a href="https://github.com/emantvery/emantvery.github.io/tree/main/examples/site-smoke" target="_blank" rel="noopener noreferrer">本站源码的 site-smoke 目录</a>。它只测试这座静态博客，不代表云脑诊疗平台或其他简历项目已完成 Playwright 自动化。写作时本地运行 4 条检查均通过；修改代码后仍需重新跑。</p></div>
+
+        <h2 id="scope">01. 先选三条能代表访问体验的路径</h2>
+        <p>冒烟测试不追求覆盖每个像素。对求职博客而言，最重要的是访客能从首页打开技术文章；手机用户能展开菜单并跳到项目；主题切换后页面仍可读。这三条路径短、可重复，也直接对应用户能感受到的问题。</p>
+        <p>测试在本地 HTTP 服务上运行，而不是直接使用 <code>file://</code>。我第一次用文件地址测试时，浏览器不会像 GitHub Pages 那样把目录链接解析到 <code>index.html</code>，导致错误地判定手机导航失败。让测试环境尽可能接近真实访问方式，是比“把断言改到通过”为止更重要的一步。</p>
+
+        <h2 id="locators">02. 用语义定位代替脆弱选择器</h2>
+        <p>导航按钮在页面中有明确的可访问名称，测试就可以按角色和名称找到它，而不是依赖第几个 <code>button</code> 或动态 class。页面重构时，只要用户看到的行为没有变，这样的定位通常更稳定。</p>
+        <pre><code>const menu = page.getByRole("button", { name: "菜单" });
+await menu.click();
+await expect(menu).toHaveAttribute("aria-expanded", "true");
+
+await page.getByRole("navigation", { name: "主导航" })
+  .getByRole("link", { name: "项目" })
+  .click();
+await expect(page).toHaveURL(/#projects$/);</code></pre>
+        <p>这里同时检查了视觉交互背后的状态：菜单展开后 <code>aria-expanded</code> 应该变为 <code>true</code>。只检查“点击没有报错”不足以证明用户真的能完成导航。</p>
+
+        <h2 id="waiting">03. 自动等待不是“任何问题都能等好”</h2>
+        <p>Playwright 对点击等操作会先检查元素是否可见、稳定、可接收事件且可用；常用断言会在超时前重试。因此一般不需要在每一步写固定的 <code>waitForTimeout(3000)</code>。硬等待会让测试变慢，仍可能在慢机器上失败。</p>
+        <p>但自动等待只解决“元素什么时候可以操作”这一类问题。测试数据不隔离、后端返回随机结果、定位器匹配多个元素、第三方资源不稳定，仍需要各自排查。失败时优先看定位是否唯一、等待的状态是否正确、网络请求是否真的完成，而不是无条件增加超时时间。</p>
+
+        <h2 id="responsive">04. 手机端不只缩小窗口</h2>
+        <p>示例将视口设为 390 × 844，随后操作移动端菜单并检查页面横向溢出。仅截图看到“差不多”还不够；页面可能被某个长代码块撑宽，导致访客必须横向滑动。宽度断言能抓到这一类明显问题：</p>
+        <pre><code>await page.setViewportSize({ width: 390, height: 844 });
+const overflow = await page.evaluate(
+  () => document.documentElement.scrollWidth > innerWidth
+);
+expect(overflow).toBe(false);</code></pre>
+        <p>这个断言不能代替人工视觉检查：文字是否太小、按钮是否易点、表格是否可以独立滚动，仍需要在实际页面上观察。自动化负责稳定的底线，人工检查负责可读性与体验。</p>
+
+        <h2 id="run">05. 如何复现这组检查</h2>
+        <pre><code>cd examples/site-smoke
+npm install
+npx playwright install chromium
+npm test</code></pre>
+        <p>脚本自动启动本地静态服务，不调用线上网站，也不依赖真实账号。已安装 Chrome 的机器可通过 <code>CHROME_PATH</code> 指向浏览器程序来运行。示例的测试结果只说明本站的三条冒烟路径和一条链接/布局巡检通过；未来内容更新仍要重跑，并按风险扩充资源加载、键盘可访问性和表单检查。</p>
+
+        <h2 id="sources">参考资料</h2>
+        <ul>
+          <li><a href="https://playwright.dev/docs/locators" target="_blank" rel="noopener noreferrer">Playwright 官方文档：Locators</a>。</li>
+          <li><a href="https://playwright.dev/docs/actionability" target="_blank" rel="noopener noreferrer">Playwright 官方文档：自动等待与可操作性检查</a>；<a href="https://playwright.dev/docs/test-assertions" target="_blank" rel="noopener noreferrer">自动重试断言</a>。</li>
+        </ul>
+        <nav class="article-nav" aria-label="文章导航"><a href="./ai-application-testing.html">← 上一篇：AI 应用测试</a><a href="./">全部文章</a></nav>
+      </article>
+      <aside class="article-aside"><p>ON THIS PAGE</p><nav aria-label="文章目录"><a href="#scope">冒烟路径</a><a href="#locators">语义定位</a><a href="#waiting">自动等待</a><a href="#responsive">手机端检查</a><a href="#run">复现命令</a><a href="#sources">参考资料</a></nav></aside>
+    </div>
+  </main>
+  <footer><p>© 2026 emantery</p><p><a href="./">技术总结</a> · <a href="../">返回首页</a></p></footer>
+</body>
+</html>

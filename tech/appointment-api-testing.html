@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="挂号接口测试设计：从号源与预约状态出发，拆分正常、异常、边界和重复请求场景，并明确响应、数据库和日志如何核对。" />
+  <link rel="canonical" href="https://emantvery.github.io/tech/appointment-api-testing.html" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <title>挂号接口：从业务状态到测试用例｜emantery</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="site-header">
+    <a class="brand" href="../" aria-label="返回首页"><span class="brand-mark">EM</span><span>emantery<span class="accent">.dev</span></span></a>
+    <nav class="nav" id="site-nav" aria-label="主导航"><a href="../#projects">项目</a><a href="../#practice">测试实践</a><a href="../#learning">学习路线</a><a href="./" aria-current="page">技术总结</a><a href="../#about">关于</a></nav>
+    <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false">菜单</button>
+    <button class="theme-toggle" type="button" aria-label="切换明暗主题">◐</button>
+  </header>
+  <main id="main" class="tech-main">
+    <header class="article-hero">
+      <p class="eyebrow">NOTE 01 / TEST DESIGN</p>
+      <h1>挂号接口：从业务状态到测试用例</h1>
+      <p class="lead">接口测试不能只问“返回码是不是 200”。预约成功意味着号源、预约记录和用户可见状态一起发生了正确变化。</p>
+      <div class="article-meta"><span>主题：业务规则 · 状态流转 · 接口验证</span><span>更新：2026.09.23</span></div>
+    </header>
+    <div class="article-grid">
+      <article class="article-body">
+        <div class="article-callout"><strong>范围说明</strong><p>下面的 <code>POST /api/appointments</code> 和字段是为了说明测试方法而设计的示例契约，不代表云脑诊疗平台的实际接口路径、字段或已完成的测试结果。真正测试前，应先以需求文档、接口文档和代码为准。</p></div>
+
+        <h2 id="contract">01. 先固定可观察的契约</h2>
+        <p>假设预约请求包含 <code>patientId</code>、<code>slotId</code> 和 <code>requestId</code>。成功时服务创建一条预约、占用一个号源，并返回预约编号。这里的 <code>requestId</code> 是示例中的业务去重键：它只有在服务端明确实现并约定语义时，才能用来断言“相同请求只创建一次”。</p>
+        <pre><code>POST /api/appointments
+Content-Type: application/json
+
+{
+  "patientId": "patient-01",
+  "slotId": "slot-09",
+  "requestId": "req-20260923-001"
+}</code></pre>
+        <p>动手写用例前，至少要明确四件事：哪些角色能预约；号源何时视为可用；重复请求返回原结果还是报冲突；取消后号源能否恢复。没有这些约定，测试里的“预期结果”只是猜测。</p>
+
+        <h2 id="state">02. 用状态而不是页面按钮组织场景</h2>
+        <p>一个简化的状态链路可以写成：<strong>号源可用 → 预约待支付 → 已支付/已取消</strong>。如果业务没有支付环节，就去掉相应节点；如果存在超时释放，就增加“超时取消”。测试重点是允许的转换能完成，不允许的转换被拒绝，失败时不留下半更新的数据。</p>
+        <div class="article-table-wrap"><table><thead><tr><th>场景</th><th>输入与前置条件</th><th>重点核对</th></tr></thead><tbody>
+          <tr><td>正常预约</td><td>已登录、号源可用、字段合法</td><td>创建一条预约；可用号源减一；返回的编号可查询</td></tr>
+          <tr><td>缺失必填项</td><td>缺少 <code>slotId</code> 或身份信息</td><td>按契约返回参数错误；不创建预约、不占号源</td></tr>
+          <tr><td>号源耗尽</td><td>对应时段余量为零</td><td>明确拒绝；记录数和余量不变</td></tr>
+          <tr><td>重复提交</td><td>同一 <code>requestId</code> 连续或并发提交</td><td>按约定返回相同结果或冲突；绝不能超卖或生成多条有效预约</td></tr>
+          <tr><td>越权请求</td><td>用户尝试替他人预约，且业务不允许</td><td>身份校验阻断；避免只依赖前端隐藏按钮</td></tr>
+          <tr><td>失效号源</td><td>时段已过期或已下架</td><td>拒绝预约；页面提示和服务端结果一致</td></tr>
+        </tbody></table></div>
+        <p>边界值不要机械地写“空、最大、最小”三个词。要查真实限制：日期是否允许当天、预约数量上限是多少、患者标识的格式如何定义。边界应从规则推出来。</p>
+
+        <h2 id="duplicate">03. 重复请求不能只看 HTTP 方法</h2>
+        <p>HTTP 规范将 <code>POST</code> 定义为非幂等方法；“预约接口重复发送也只创建一次”不是协议自动保证的，而是应用必须自行定义并实现的规则。测试时要区分<strong>客户端重试</strong>、<strong>用户重复点击</strong>和<strong>并发抢同一个号源</strong>。前两者可能用业务去重键处理，后一种还要验证并发控制与数据约束。</p>
+        <p>最容易漏掉的是“第一次请求已在服务端成功，但客户端超时没收到响应”。此时重试不应凭空再占一个号源。测试设计应记录两次请求的 <code>requestId</code>、响应、预约表和号源余量；预期结果必须与产品和后端约定一致。</p>
+
+        <h2 id="assertions">04. 一条用例至少有三层证据</h2>
+        <ol>
+          <li><strong>接口层：</strong>状态码、响应结构、业务错误码和预约编号；错误时不应返回误导性的“成功”。</li>
+          <li><strong>数据层：</strong>预约记录数、患者与号源关联、号源余量、订单状态。需要在隔离的测试环境中查询，不能依赖生产数据。</li>
+          <li><strong>用户层与日志：</strong>页面是否给出可理解的提示；日志是否足以串起请求，但不应泄露患者敏感信息。</li>
+        </ol>
+        <p>如果测试失败，记录可复现的前置数据、请求、响应、时间与关联 ID，再区分“看到的事实”和“猜测的原因”。复测时使用同一套输入和预期，同时检查相关状态是否被修复。</p>
+
+        <h2 id="sources">参考资料与延伸</h2>
+        <ul>
+          <li><a href="https://www.rfc-editor.org/rfc/rfc9110.html#section-9.2.2" target="_blank" rel="noopener noreferrer">RFC 9110：HTTP 方法的幂等语义</a>。用于区分协议属性与应用层重复提交规则。</li>
+          <li><a href="./pytest-api-tests.html">下一篇：把部分接口场景写成可运行的 pytest 测试</a>。演示服务有意简化，不代替真实挂号系统。</li>
+        </ul>
+        <nav class="article-nav" aria-label="文章导航"><a href="./">全部文章 ←</a><a href="./pytest-api-tests.html">下一篇：pytest 接口测试 →</a></nav>
+      </article>
+      <aside class="article-aside"><p>ON THIS PAGE</p><nav aria-label="文章目录"><a href="#contract">可观察的契约</a><a href="#state">状态与场景矩阵</a><a href="#duplicate">重复请求</a><a href="#assertions">三层证据</a><a href="#sources">参考资料</a></nav></aside>
+    </div>
+  </main>
+  <footer><p>© 2026 emantery</p><p><a href="./">技术总结</a> · <a href="../">返回首页</a></p></footer>
+</body>
+</html>

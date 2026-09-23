@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="用 pytest 和 requests 实现可复现的接口测试：fixture 隔离数据、参数化覆盖必填项、显式超时、多层断言和 GitHub Actions CI。" />
+  <link rel="canonical" href="https://emantvery.github.io/tech/pytest-api-tests.html" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <title>用 pytest 搭一组可复现的接口测试｜emantery</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="site-header">
+    <a class="brand" href="../" aria-label="返回首页"><span class="brand-mark">EM</span><span>emantery<span class="accent">.dev</span></span></a>
+    <nav class="nav" id="site-nav" aria-label="主导航"><a href="../#projects">项目</a><a href="../#practice">测试实践</a><a href="../#learning">学习路线</a><a href="./" aria-current="page">技术总结</a><a href="../#about">关于</a></nav>
+    <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false">菜单</button>
+    <button class="theme-toggle" type="button" aria-label="切换明暗主题">◐</button>
+  </header>
+  <main id="main" class="tech-main">
+    <header class="article-hero">
+      <p class="eyebrow">NOTE 02 / API AUTOMATION</p>
+      <h1>用 pytest 搭一组可复现的接口测试</h1>
+      <p class="lead">自动化的第一目标不是“代码多”，而是同一个用例重复运行仍能说明同一个问题：有独立数据、明确超时和可解释的断言。</p>
+      <div class="article-meta"><span>主题：Python · pytest · requests · CI</span><span>更新：2026.09.23</span></div>
+    </header>
+    <div class="article-grid">
+      <article class="article-body">
+        <div class="article-callout"><strong>示例边界</strong><p>本文配套的是独立教学服务，代码在 <a href="https://github.com/emantvery/emantvery.github.io/tree/main/examples/appointment-api" target="_blank" rel="noopener noreferrer">GitHub 示例目录</a>。它不连接云脑诊疗平台，也不声称覆盖真实挂号系统。写作时在本地运行 <code>python -m pytest -q</code>，结果为 8 个测试通过；后续修改代码仍应重新执行。</p></div>
+
+        <h2 id="setup">01. 最小可运行环境</h2>
+        <p>示例使用 Python 标准库启动一个本地内存服务，用 <code>requests</code> 发 HTTP 请求，用 <code>pytest</code> 组织测试。运行所需的依赖与命令都在仓库里，不依赖线上账号或数据库。</p>
+        <pre><code>cd examples/appointment-api
+python -m venv .venv
+# 激活虚拟环境后：
+python -m pip install -r requirements.txt
+python -m pytest -q</code></pre>
+        <p>每条测试用例通过 fixture 启动一台监听随机端口的服务，测试结束就关闭。这样前一个用例创建的预约不会污染下一个用例，也不会争用固定端口。真实项目里可用独立测试库、事务回滚或可控的数据清理实现同样的隔离目标。</p>
+
+        <h2 id="fixture">02. fixture 让“前置状态”可重复</h2>
+        <pre><code>@pytest.fixture
+def base_url():
+    server = AppointmentServer(("127.0.0.1", 0))
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f"http://127.0.0.1:{server.server_port}"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)</code></pre>
+        <p><code>yield</code> 前创建前置状态，之后释放资源。随机端口 <code>0</code> 由系统分配，减少本机端口冲突。示例的状态只在内存中，便于理解；真实服务还要考虑数据库清理、异步任务和外部依赖的稳定性。</p>
+
+        <h2 id="parametrize">03. 参数化覆盖同一类规则</h2>
+        <p>三个必填字段有相同的预期：缺失时返回参数错误，且号源余量不变。用参数化能减少重复代码，同时在失败报告里指出具体是哪个字段失效。注意不要把可变字典作为多个参数用例的共享数据再原地修改；pytest 文档说明参数值会原样传递，并不会自动复制。</p>
+        <pre><code>@pytest.mark.parametrize("field", ["patientId", "slotId", "requestId"])
+def test_missing_required_field_does_not_take_slot(base_url, field):
+    invalid = payload()  # 每次新建字典
+    del invalid[field]
+    response = post(base_url, invalid)
+    assert response.status_code == 400
+    assert response.json()["error"] == "missing_or_invalid_field"
+    slot = requests.get(f"{base_url}/slots/slot-01", timeout=2)
+    assert slot.json()["remaining"] == 1</code></pre>
+
+        <h2 id="assertions">04. 断言业务结果，而不是只断言 2xx</h2>
+        <p>成功预约时，测试先检查创建响应，再用预约编号重新查询资源，最后检查号源余量。这样可以发现“接口声称成功，但数据没有正确更新”的情况。重复请求则检查两次返回的是同一个预约编号；并发请求争夺最后一个号源时，应恰好有一个成功、一个被拒绝。</p>
+        <pre><code>first = post(base_url, payload())
+second = post(base_url, payload())
+assert first.status_code == 201
+assert second.status_code == 200
+assert second.json()["appointmentId"] == first.json()["appointmentId"]</code></pre>
+        <p>这里的去重键与返回码是<strong>示例服务自己定义的契约</strong>，不是所有接口的通用标准。接入真实接口时，需要先与开发确认去重范围、有效期、请求体变化后的行为以及并发约束。</p>
+
+        <h2 id="timeouts">05. 超时与失败信息是测试稳定性的基础</h2>
+        <p><code>requests</code> 默认不会替你设置适合项目的超时。示例统一传入 <code>timeout=2</code>，避免服务没有响应时测试无限等待。这个值适合本地轻量示例，不应直接照搬到网络环境；接口服务级别协议、CI 环境和慢操作需要分别评估。官方文档也说明 <code>timeout</code> 并非整个响应下载过程的总耗时上限。</p>
+        <p>失败报告应能定位到请求、预期和实际结果，而不是只出现“assert False”。测试代码可以附加业务标识与响应文本，但敏感字段要脱敏，不要把患者资料或令牌打印到 CI 日志。</p>
+
+        <h2 id="ci">06. 接入持续集成，但不误读绿色勾号</h2>
+        <p>仓库里的示例 CI 在相关代码路径发生提交或拉取请求时安装依赖并运行测试。若运行通过，它证明的是<strong>这个独立示例</strong>在该运行环境下通过，不证明真实医疗业务、前端体验或 AI 推荐质量。CI 与本地使用同一条 <code>python -m pytest -q</code> 命令，便于复现失败。</p>
+        <p>下一步若扩展到真实项目，应按速度分层：提交时跑稳定的单元/接口检查，部署到测试环境后再跑端到端流程；不要把需要人工判断的 AI 内容质量硬塞进“所有断言都是确定的”测试里。</p>
+
+        <h2 id="sources">参考资料</h2>
+        <ul>
+          <li><a href="https://docs.pytest.org/en/stable/how-to/fixtures.html" target="_blank" rel="noopener noreferrer">pytest 官方文档：fixtures</a>；<a href="https://docs.pytest.org/en/stable/how-to/parametrize.html" target="_blank" rel="noopener noreferrer">参数化</a>。</li>
+          <li><a href="https://requests.readthedocs.io/en/latest/user/quickstart/#timeouts" target="_blank" rel="noopener noreferrer">Requests 官方文档：超时</a>。</li>
+          <li><a href="https://docs.github.com/en/actions/tutorials/build-and-test-code/python" target="_blank" rel="noopener noreferrer">GitHub 官方文档：构建和测试 Python</a>。</li>
+        </ul>
+        <nav class="article-nav" aria-label="文章导航"><a href="./appointment-api-testing.html">← 上一篇：测试设计</a><a href="./ai-application-testing.html">下一篇：AI 应用测试 →</a><a href="./">全部文章</a></nav>
+      </article>
+      <aside class="article-aside"><p>ON THIS PAGE</p><nav aria-label="文章目录"><a href="#setup">运行环境</a><a href="#fixture">fixture 与隔离</a><a href="#parametrize">参数化</a><a href="#assertions">业务断言</a><a href="#timeouts">超时与排查</a><a href="#ci">持续集成</a><a href="#sources">参考资料</a></nav></aside>
+    </div>
+  </main>
+  <footer><p>© 2026 emantery</p><p><a href="./">技术总结</a> · <a href="../">返回首页</a></p></footer>
+</body>
+</html>

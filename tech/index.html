@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="emantery 的技术总结：接口测试设计、pytest 接口自动化和 AI 应用测试，附可运行示例与参考资料。" />
+  <link rel="canonical" href="https://emantvery.github.io/tech/" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <title>技术总结｜emantery</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="site-header">
+    <a class="brand" href="../" aria-label="返回首页"><span class="brand-mark">EM</span><span>emantery<span class="accent">.dev</span></span></a>
+    <nav class="nav" id="site-nav" aria-label="主导航"><a href="../#projects">项目</a><a href="../#practice">测试实践</a><a href="../#learning">学习路线</a><a href="./" aria-current="page">技术总结</a><a href="../#about">关于</a></nav>
+    <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false">菜单</button>
+    <button class="theme-toggle" type="button" aria-label="切换明暗主题">◐</button>
+  </header>
+  <main id="main" class="tech-main">
+    <section class="tech-hero">
+      <p class="eyebrow">FIELD NOTES / TEST ENGINEERING</p>
+      <h1>技术总结，<br /><span>从场景走到证据。</span></h1>
+      <p>这组文章面向测试开发学习：先解释业务风险，再给出可验证的预期和可复现的示例。示例接口是为讲解而设计，与简历中的真实项目经历分开展示。</p>
+      <div class="tech-guide"><a href="../#projects">查看真实项目 ↗</a><a href="../#learning">查看学习路线 ↗</a><a href="../">返回首页 ↗</a></div>
+    </section>
+    <div class="tech-list" aria-label="技术文章">
+      <a class="tech-list-card" href="./appointment-api-testing.html"><span>NOTE 01</span><div><h2>挂号接口：从业务状态到测试用例</h2><p>业务流程、状态机、场景矩阵、重复请求与多层断言。适合从功能测试过渡到接口测试时阅读。</p></div><span class="arrow" aria-hidden="true">↗</span></a>
+      <a class="tech-list-card" href="./pytest-api-tests.html"><span>NOTE 02</span><div><h2>用 pytest 搭一组可复现的接口测试</h2><p>提供独立演示服务与测试代码，解释 fixture、参数化、请求超时、数据隔离和 CI。</p></div><span class="arrow" aria-hidden="true">↗</span></a>
+      <a class="tech-list-card" href="./ai-application-testing.html"><span>NOTE 03</span><div><h2>AI 导诊类产品应该分层测什么</h2><p>把传统接口可靠性、输出约束、页面兜底与内容评估拆开，避免用一个“返回 200”概括质量。</p></div><span class="arrow" aria-hidden="true">↗</span></a>
+      <a class="tech-list-card" href="./playwright-ui-tests.html"><span>NOTE 04</span><div><h2>从稳定定位到页面冒烟检查</h2><p>用可运行的 Playwright 示例检查本站文章入口、移动端菜单和主题切换，解释稳定定位与自动等待。</p></div><span class="arrow" aria-hidden="true">↗</span></a>
+    </div>
+  </main>
+  <footer><p>© 2026 emantery</p><p>技术示例不等于既有项目成果 · <a href="../">返回首页</a></p></footer>
+</body>
+</html>

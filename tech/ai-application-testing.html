@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AI 导诊类应用测试方法：分层验证请求与兜底、结构化输出、页面呈现、隐私安全和人工参与的内容评估。" />
+  <link rel="canonical" href="https://emantvery.github.io/tech/ai-application-testing.html" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+  <title>AI 导诊类产品应该分层测什么｜emantery</title>
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="site-header">
+    <a class="brand" href="../" aria-label="返回首页"><span class="brand-mark">EM</span><span>emantery<span class="accent">.dev</span></span></a>
+    <nav class="nav" id="site-nav" aria-label="主导航"><a href="../#projects">项目</a><a href="../#practice">测试实践</a><a href="../#learning">学习路线</a><a href="./" aria-current="page">技术总结</a><a href="../#about">关于</a></nav>
+    <button class="menu-toggle" type="button" aria-controls="site-nav" aria-expanded="false">菜单</button>
+    <button class="theme-toggle" type="button" aria-label="切换明暗主题">◐</button>
+  </header>
+  <main id="main" class="tech-main">
+    <header class="article-hero">
+      <p class="eyebrow">NOTE 03 / AI APPLICATION QUALITY</p>
+      <h1>AI 导诊类产品应该分层测什么</h1>
+      <p class="lead">模型接口返回成功，只说明一次通信完成。产品是否可用、异常是否兜底、输出是否适合展示，是不同层次的问题。</p>
+      <div class="article-meta"><span>主题：AI 应用测试 · 失败兜底 · 输出评估</span><span>更新：2026.09.23</span></div>
+    </header>
+    <div class="article-grid">
+      <article class="article-body">
+        <div class="article-callout"><strong>范围说明</strong><p>本文是面向 AI 应用质量的测试设计总结，不是对任何导诊系统医疗效果的验证报告，也不提供诊疗建议。云脑诊疗平台中的 AI 导诊是项目功能背景；下述矩阵为学习示例，不能据此推断原项目已完成这些测试。</p></div>
+
+        <h2 id="layers">01. 先拆成四层，不把“200”当结论</h2>
+        <ol>
+          <li><strong>输入与业务规则：</strong>信息是否足够、字段是否有长度限制、空输入与重复提交如何处理。</li>
+          <li><strong>模型调用链：</strong>鉴权、超时、限流、上游错误、空响应和重试是否被正确处理。</li>
+          <li><strong>输出与呈现：</strong>结构是否符合约定、是否含不应展示的原始内容、页面能否给出清楚的失败提示。</li>
+          <li><strong>内容质量：</strong>推荐是否符合经过确认的业务准则，以及评价者之间是否能达成一致。</li>
+        </ol>
+        <p>前三层可以大量使用确定性断言；最后一层往往不能简单等同于字符串完全匹配，需要领域人员定义评判规则、样本和复核流程。NIST 的 AI 风险管理资料强调在具体使用情境下进行测试、评估、验证与确认，而不是只依赖一次演示结果。</p>
+
+        <h2 id="matrix">02. 把异常变成可执行的检查点</h2>
+        <div class="article-table-wrap"><table><thead><tr><th>输入或故障</th><th>可观察预期</th><th>检查位置</th></tr></thead><tbody>
+          <tr><td>描述为空或明显不足</td><td>按产品规则提示补充信息；不直接展示编造出的确定性推荐</td><td>前端提示、是否发起模型请求</td></tr>
+          <tr><td>模型接口超时/限流</td><td>服务端按约定返回可识别错误；前端有兜底文案，不无限加载</td><td>模拟上游响应、接口状态、页面</td></tr>
+          <tr><td>返回 JSON 缺字段/类型错误</td><td>解析失败有明确处理；不把异常对象或原始文本直接渲染为正式建议</td><td>解析器测试、页面渲染</td></tr>
+          <tr><td>输出包含 HTML/脚本片段</td><td>作为不可信文本处理，不能执行脚本或拼成危险页面</td><td>渲染组件、安全检查</td></tr>
+          <tr><td>输入夹带“忽略规则”等指令</td><td>不因用户输入改变应用权限、泄露敏感配置或执行越权操作</td><td>服务端权限边界、日志与输出</td></tr>
+          <tr><td>同一输入多次输出不同</td><td>内容评估使用预先定义的容忍范围与人工复核，不以逐字相同作为唯一通过条件</td><td>样本集、评审记录</td></tr>
+        </tbody></table></div>
+        <p>OWASP 将提示注入、敏感信息泄露和不当输出处理列为大模型应用风险。这里的安全断言应放在应用边界：鉴权、输出验证与页面安全不能只靠给模型写一句“请勿这样做”。</p>
+
+        <h2 id="mock">03. 用受控替身测失败路径</h2>
+        <p>把上游模型调用封装成独立接口，再在测试环境用可控替身返回固定内容，比反复调用真实模型更适合验证错误处理。至少准备四种响应：正常结构、超时、非预期状态码、字段类型错误。对每一种响应，核对后端是否记录关联 ID、前端是否结束加载状态、用户是否看到清晰且不泄露内部细节的提示。</p>
+        <p>示意的结果结构可以是：</p>
+        <pre><code>{
+  "status": "needs_more_information",
+  "message": "请补充症状持续时间",
+  "suggestions": []
+}</code></pre>
+        <p>它只是测试契约示意，不是原项目真实接口，也不是医学判断。真实字段、状态和提示文案应由产品、开发及相关领域人员确认。测试中不要把真实患者资料放进公开仓库、截图或第三方模型调用记录。</p>
+
+        <h2 id="evaluation">04. 内容质量需要样本和评价规则</h2>
+        <p>如果要评估推荐内容，先整理经授权且去标识化的样本，覆盖信息充足、信息缺失、含糊表述和高风险表述等类别。为每个样本写清“什么算合格”：例如是否要求补充信息、是否超出允许的建议范围、是否有不当确定性表达。之后再由具备相应领域知识的人复核争议样本。</p>
+        <p>记录模型版本、提示词版本、参数、时间和样本集版本，才能解释一次评估结果为何变化。所谓“准确率”必须说明分母、标注规则及人工一致性；没有这些条件，不应在简历或博客写出百分比。</p>
+
+        <h2 id="report">05. 一个可追溯的问题记录长什么样</h2>
+        <p>比“AI 回答错了”更有用的记录是：<strong>输入类别</strong>、测试环境与版本、模型调用是否成功、返回结构、页面展示、期望依据、实际结果、复现概率和脱敏截图/日志位置。对偶发内容问题，可以保存多次采样结果并标明差异；对确定性解析错误，则尽量保留最小复现输入。</p>
+        <p>测试者最后要知道自己证明了什么：接口稳定不等于内容正确；安全边界挡住一类输入，也不意味着任何提示注入都不可能成功。把结论的适用范围写明，比一句“AI 功能测试通过”更有价值。</p>
+
+        <h2 id="sources">参考资料</h2>
+        <ul>
+          <li><a href="https://genai.owasp.org/llm-top-10/" target="_blank" rel="noopener noreferrer">OWASP Gen AI Security Project：2025 LLM Top 10</a>；<a href="https://genai.owasp.org/llmrisk/llm052025-improper-output-handling/" target="_blank" rel="noopener noreferrer">不当输出处理</a>。</li>
+          <li><a href="https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence" target="_blank" rel="noopener noreferrer">NIST AI 600-1：生成式 AI 风险管理框架资料</a>。</li>
+        </ul>
+        <nav class="article-nav" aria-label="文章导航"><a href="./pytest-api-tests.html">← 上一篇：接口自动化</a><a href="./">全部文章</a></nav>
+      </article>
+      <aside class="article-aside"><p>ON THIS PAGE</p><nav aria-label="文章目录"><a href="#layers">四层测试</a><a href="#matrix">异常场景矩阵</a><a href="#mock">受控替身</a><a href="#evaluation">内容评估</a><a href="#report">问题记录</a><a href="#sources">参考资料</a></nav></aside>
+    </div>
+  </main>
+  <footer><p>© 2026 emantery</p><p><a href="./">技术总结</a> · <a href="../">返回首页</a></p></footer>
+</body>
+</html>
